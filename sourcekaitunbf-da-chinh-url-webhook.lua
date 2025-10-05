@@ -169,7 +169,7 @@
     -- Create a table to store UI references for blurring
     local UIReferences = {}
 
-    HopGui.Name = "Kuma Skidded"
+    HopGui.Name = "ToiLaTu"
     HopGui.Parent = game:GetService("CoreGui")
     HopGui.Enabled = true
     HopGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
@@ -185,7 +185,7 @@
     NameHub.BorderColor3 = Color3.fromRGB(0, 0, 0)
     NameHub.BorderSizePixel = 0
     NameHub.Font = Enum.Font.FredokaOne
-    NameHub.Text = "Kuma Skidded"
+    NameHub.Text = "ToiLaTu"
 
     local UIStroke = Instance.new("UIStroke")
     UIStroke.Parent = NameHub
@@ -5210,6 +5210,7 @@
         Report(response2)
     end
 end)()
+
 
 
 
