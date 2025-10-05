@@ -618,7 +618,7 @@
         repeat wait() until game.Players.LocalPlayer.Character
         spawn(function()
             game:GetService("Players").LocalPlayer.PlayerScripts:WaitForChild('NewIslandLOD', 9999):Destroy() 
-            game:GetService("Players")LocalPlayer.PlayerScripts:WaitForChild('IslandLOD', 9999):Destroy() 
+            game:GetService("Players").LocalPlayer.PlayerScripts:WaitForChild('IslandLOD', 9999):Destroy() 
         end)
         alert("wait 1", "ok")
 
@@ -5210,3 +5210,4 @@
         Report(response2)
     end
 end)()
+
