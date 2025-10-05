@@ -1389,7 +1389,7 @@
     function GenerateUUID()
         local Template ='xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'
         return string.gsub(Template, '[xy]', function (Idc)
-            local V = (Idx == 'x') and math.random(0, 0xf) or math.random(8, 0xb)
+            local V = (Idc == 'x') and math.random(0, 0xf) or math.random(8, 0xb)
             return string.format('%x', V)
         end)
     end
@@ -5210,4 +5210,5 @@
         Report(response2)
     end
 end)()
+
 
