@@ -48,7 +48,7 @@
 
             -- Upgrades 
 
-            RaceV2 = false
+            RaceV2 = true
 
         },
         Settings = {
@@ -5210,6 +5210,7 @@
         Report(response2)
     end
 end)()
+
 
 
 
