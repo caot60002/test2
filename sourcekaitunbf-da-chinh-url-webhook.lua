@@ -15,7 +15,7 @@
             task.wait(2)
             print(v.TitleFrame.ErrorTitle.Text)
             if v.TitleFrame.ErrorTitle.Text == 'Teleport Failed' then
-                if string.find(v.MessageArea.ErrorFrame.ErrorMessage, 'Unable to join game') then
+                if string.find(v.MessageArea.ErrorFrame.ErrorMessage.Text, 'Unable to join game') then
                     while true do end 
                 end
             else 
@@ -5210,6 +5210,7 @@
         Report(response2)
     end
 end)()
+
 
 
 
