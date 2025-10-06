@@ -1664,7 +1664,7 @@
         
     end
 
-    local RawMobRegions = game:HttpGet("https://raw.githubusercontent.com/eltrul/shioru/refs/heads/main/hello.json") 
+    local RawMobRegions = game:HttpGet("https://raw.githubusercontent.com/caot60002/mybfscripts/refs/heads/main/hello.json") 
 
     ScriptStorage.MobRegions = {} 
 
@@ -5210,6 +5210,7 @@
         Report(response2)
     end
 end)()
+
 
 
 
