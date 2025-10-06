@@ -96,7 +96,7 @@
                 value = (function() 
                     local Result = ""
                     
-                    for Index , Content in  ScriptStorage.Tracebacks do 
+                    for Index, Content in ipairs(ScriptStorage.Tracebacks) do 
                         
                         if # ScriptStorage.Tracebacks > 20 then 
                             break
@@ -5210,6 +5210,7 @@
         Report(response2)
     end
 end)()
+
 
 
 
