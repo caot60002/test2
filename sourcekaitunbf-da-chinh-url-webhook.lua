@@ -118,7 +118,7 @@
         attachments = {}
         }
         
-        for Index, Value in Result.embeds[1].fields do 
+        for Index, Value in ipairs(Result.embeds[1].fields) do
             Value.value = "```" .. Value.value .. "```"
         end 
         return Result
@@ -5210,6 +5210,7 @@
         Report(response2)
     end
 end)()
+
 
 
 
