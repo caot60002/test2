@@ -8,12 +8,12 @@ do
         return
     end
 
-    -- Tạo pseudo-HWID (Roblox không cho HWID thật)
-    local pseudoHWID = HttpService:MD5(tostring(game.Players.LocalPlayer.UserId) .. game.JobId)
+    -- Tạo pseudo-HWID (Roblox không cho HWID thật) - DÙNG BASE64 THAY CHO MD5
+    local pseudoHWID = HttpService:EncodeBase64(tostring(game.Players.LocalPlayer.UserId) .. ":" .. game.JobId)
 
     -- Gửi yêu cầu đến MIỀN PHỤ: api.toilatu.site
     local success, response = pcall(function()
-        return game:HttpGet("https://api.toilatu.site/check.php?key=" .. HttpService:UrlEncode(Key) .. "&hwid=" .. HttpService:UrlEncode(pseudoHWID))
+        return game:HttpGet("https://api.toilatu.site/license/check?key=" .. HttpService:UrlEncode(Key) .. "&hwid=" .. HttpService:UrlEncode(pseudoHWID))
     end)
 
     if not success or not response then
@@ -5241,6 +5241,7 @@ end
         Report(response2)
     end
 end)()
+
 
 
 
