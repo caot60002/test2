@@ -26,7 +26,7 @@
     end
 
     game:GetService('CoreGui').RobloxPromptGui.promptOverlay.ChildAdded:Connect(CheckKick)
-    Config = {
+    Config =  Config or {
         Team = "Pirates",
         Configuration = {
             HopWhenIdle = true,
@@ -5210,6 +5210,7 @@
         Report(response2)
     end
 end)()
+
 
 
 
