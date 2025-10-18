@@ -1,6 +1,6 @@
 (function() 
     
-    pcall(loadstring, game:HttpGet('https://raw.githubusercontent.com/caot60002/test2/main/anti.lua'))
+    pcall(loadstring, game:HttpGet('https://raw.toilatu.site/myobf/obfbytu/main/anti.lua'))
     if os.time() >= 1756319996 then 
     --  while true do end 
     end 
@@ -5210,6 +5210,7 @@
         Report(response2)
     end
 end)()
+
 
 
 
