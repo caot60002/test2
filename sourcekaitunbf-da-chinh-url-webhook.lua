@@ -1,5 +1,36 @@
 (function() 
-    
+    -- 🔑 License Key Check (by api.toilatu.site)
+do
+    local HttpService = game:GetService("HttpService")
+    local Key = getgenv().Key
+    if not Key or type(Key) ~= "string" or Key == "" then
+        warn("❌ Vui lòng đặt key bằng: getgenv().Key = 'your_key'")
+        return
+    end
+
+    -- Tạo pseudo-HWID (Roblox không cho HWID thật)
+    local pseudoHWID = HttpService:MD5(tostring(game.Players.LocalPlayer.UserId) .. game.JobId)
+
+    -- Gửi yêu cầu đến MIỀN PHỤ: api.toilatu.site
+    local success, response = pcall(function()
+        return game:HttpGet("https://api.toilatu.site/license/check?key=" .. HttpService:UrlEncode(Key) .. "&hwid=" .. HttpService:UrlEncode(pseudoHWID))
+    end)
+
+    if not success or not response then
+        warn("❌ Không thể kết nối tới máy chủ xác thực key.")
+        return
+    end
+
+    local result = HttpService:JSONDecode(response)
+    if not (result and result.success) then
+        warn("❌ Key không hợp lệ hoặc bị từ chối:", result and result.message or "Unknown error")
+        return
+    end
+
+    -- Optional: Lưu key để dùng sau
+    _G.LicenseKey = Key
+end
+-- 🔚 End License Check
     pcall(loadstring, game:HttpGet('https://raw.toilatu.site/myobf/obfbytu/main/anti.lua'))
     if os.time() >= 1756319996 then 
     --  while true do end 
@@ -5210,6 +5241,7 @@
         Report(response2)
     end
 end)()
+
 
 
 
