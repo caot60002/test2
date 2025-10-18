@@ -13,7 +13,7 @@ do
 
     -- Gửi yêu cầu đến MIỀN PHỤ: api.toilatu.site
     local success, response = pcall(function()
-        return game:HttpGet("https://api.toilatu.site/license/check?key=" .. HttpService:UrlEncode(Key) .. "&hwid=" .. HttpService:UrlEncode(pseudoHWID))
+        return game:HttpGet("https://api.toilatu.site/check.php?key=" .. HttpService:UrlEncode(Key) .. "&hwid=" .. HttpService:UrlEncode(pseudoHWID))
     end)
 
     if not success or not response then
@@ -5241,6 +5241,7 @@ end
         Report(response2)
     end
 end)()
+
 
 
 
