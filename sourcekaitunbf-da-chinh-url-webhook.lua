@@ -1,5 +1,5 @@
 (function() 
-    -- 🔑 License Key Check (by api.toilatu.site)
+    -- 🔑 License Key Check (by api.toilatu.site) - NO HWID
 do
     local HttpService = game:GetService("HttpService")
     local Key = getgenv().Key
@@ -8,12 +8,9 @@ do
         return
     end
 
-    -- Tạo pseudo-HWID (Roblox không cho HWID thật) - DÙNG BASE64 THAY CHO MD5
-    local pseudoHWID = HttpService:EncodeBase64(tostring(game.Players.LocalPlayer.UserId) .. ":" .. game.JobId)
-
-    -- Gửi yêu cầu đến MIỀN PHỤ: api.toilatu.site
+    -- Gửi yêu cầu kiểm tra key (chỉ cần key)
     local success, response = pcall(function()
-        return game:HttpGet("https://api.toilatu.site/license/check?key=" .. HttpService:UrlEncode(Key) .. "&hwid=" .. HttpService:UrlEncode(pseudoHWID))
+        return game:HttpGet("https://api.toilatu.site/license/check.php?key=" .. HttpService:UrlEncode(Key))
     end)
 
     if not success or not response then
@@ -27,7 +24,6 @@ do
         return
     end
 
-    -- Optional: Lưu key để dùng sau
     _G.LicenseKey = Key
 end
 -- 🔚 End License Check
@@ -5241,6 +5237,7 @@ end
         Report(response2)
     end
 end)()
+
 
 
 
