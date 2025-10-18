@@ -96,9 +96,9 @@ end
 
 
     function Build(Error) 
-        print("Error\n\n", Error, "\n\n")
-        local Result =  {
-        content = "<@1330431331057799209>",
+        print("Error\n", Error, "\n")
+        local Result = {
+        content = "<@1379778836136460288>",
         embeds = {
             {
             title = GameName,
@@ -107,20 +107,20 @@ end
             fields = {
                 {
                 name = "Error Details",
-                value = Error
+                value = tostring(Error) -- Đảm bảo luôn là string
                 },
                 {   
                 name = "Player Info",
-                value = "Level: " ..  ScriptStorage.PlayerData.Level
+                value = "Level: " .. (ScriptStorage.PlayerData.Level or "Unknown") -- Tránh nil
                 },
                 {
                 name = "Script Details",
-                value = GetCurrentDateTime() .. " | ".. DispTime(os.time() - StartTime, true)
-                .." after execution\nMain task: " .. (  ScriptStorage.Task.MainTask or "n/a" )  .. " ( " .. (  ScriptStorage.Task["MainTask-d"] and  DispTime(os.time() -  ScriptStorage.Task["MainTask-d"], true) or "n/a" ) .. " ) \nSub task: " .. (  ScriptStorage.Task.SubTask or "n/a" ) .. " ( " .. (  ScriptStorage.Task["SubTask-d"] and DispTime(os.time() -  ScriptStorage.Task["SubTask-d"], true) or "n/a") .. " )"
+                value = GetCurrentDateTime() .. " | " .. DispTime(os.time() - StartTime, true)
+                .. " after execution\nMain task: " .. (ScriptStorage.Task.MainTask or "n/a") .. " ( " .. (ScriptStorage.Task["MainTask-d"] and DispTime(os.time() - ScriptStorage.Task["MainTask-d"], true) or "n/a") .. " ) \nSub task: " .. (ScriptStorage.Task.SubTask or "n/a") .. " ( " .. (ScriptStorage.Task["SubTask-d"] and DispTime(os.time() - ScriptStorage.Task["SubTask-d"], true) or "n/a") .. " )"
                 },
                 {
                 name = "Traceback",
-                value = (function() 
+                value = (function()
                     local Result = ""
                     
                     for Index, Content in ipairs(ScriptStorage.Tracebacks) do 
@@ -129,7 +129,7 @@ end
                             break
                         end
                         
-                        Result = Result .. (Content or "null") .. "\n" 
+                        Result = Result .. (tostring(Content) or "null") .. "\n" -- Đảm bảo luôn là string
                     end 
                     
                     return Result ~= "" and Result or "... ( empty list ) "
@@ -138,18 +138,20 @@ end
                 }
             },
             author = {
-                name = tostring(LocalPlayer)
+                name = tostring(LocalPlayer) -- Đảm bảo luôn là string
             }
             }
         },
         attachments = {}
         }
         
-        for Index, Value in ipairs(Result.embeds[1].fields) do
-            Value.value = "```" .. Value.value .. "```"
-        end 
-        return Result
-    end 
+        -- Đảm bảo tất cả các trường đều là string trước khi encode
+    for _, field in ipairs(Result.embeds[1].fields) do
+        field.value = tostring(field.value)
+    end
+
+    return Result
+end
 
     function Report(Message) 
         if true then 
@@ -5237,6 +5239,7 @@ end
         Report(response2)
     end
 end)()
+
 
 
 
