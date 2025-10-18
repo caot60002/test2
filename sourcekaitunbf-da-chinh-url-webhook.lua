@@ -153,23 +153,37 @@ end
     return Result
 end
 
-    function Report(Message) 
-        if true then 
-            if Traces[Message] then return end 
-            Traces[Message] = true 
-            
-            local Body  = game:GetService("HttpService"):JSONEncode(Build(Message)) 
-            
-            local AffectedIndexes = {0,0,0,0}
-            
-            request({
-                Url = "https://discord.com/api/webhooks/1382486415350435940/Za_GuoR_ACbXYQXogXFaueI_AMXW3fDCaUQeCMfCJZZtAeO2IVdVkgKtYmnhWuxT-nlr", 
-                Method = "POST", 
-                Headers = {["Content-Type"] = "application/json"}, 
-                Body = Body 
-            })
-        end 
+    function Report(Message)
+        if true then
+            if Traces[Message] then return end
+            Traces[Message] = true
+
+            -- 1. Encode JSON an toàn
+            local success, encodedBody = pcall(function()
+                return game:GetService("HttpService"):JSONEncode(Build(Message))
+            end)
+
+            if not success then
+                warn("❌ Failed to encode JSON:", encodedBody)
+                return
+            end
+
+            -- 2. Gửi request an toàn
+            local success2, response = pcall(function()
+                return request({
+                    Url = "https://discord.com/api/webhooks/1382486415350435940/Za_GuoR_ACbXYQXogXFaueI_AMXW3fDCaUQeCMfCJZZtAeO2IVdVkgKtYmnhWuxT-nlr",
+                    Method = "POST",
+                    Headers = {["Content-Type"] = "application/json"},
+                    Body = encodedBody
+                })
+            end)
+
+            if not success2 then
+                warn("❌ Failed to send report:", response)
+            end
+        end
     end
+    
 
     function mmb() 
         
@@ -5239,6 +5253,7 @@ end
         Report(response2)
     end
 end)()
+
 
 
 
