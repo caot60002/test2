@@ -1,26 +1,83 @@
 (function() 
-    -- 🔑 License Key Check (by api.toilatu.site) - NO HWID
+    -- 🔑 License Key Check (by api.toilatu.site) - WITH KICK ON FAIL
 do
     local HttpService = game:GetService("HttpService")
-    local Key = getgenv().Key
-    if not Key or type(Key) ~= "string" or Key == "" then
-        warn("❌ Vui lòng đặt key bằng: getgenv().Key = 'your_key'")
+    local Players = game:GetService("Players")
+    local LocalPlayer = Players.LocalPlayer
+
+    -- Hàm hiển thị thông báo + kick
+    local function KickWithMessage(message)
+        -- Tạo GUI thông báo
+        local ScreenGui = Instance.new("ScreenGui")
+        ScreenGui.ResetOnSpawn = false
+        ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+        local Frame = Instance.new("Frame")
+        Frame.Size = UDim2.new(0, 400, 0, 120)
+        Frame.Position = UDim2.new(0.5, -200, 0.5, -60)
+        Frame.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+        Frame.BorderSizePixel = 0
+        Frame.Parent = ScreenGui
+
+        local UIStroke = Instance.new("UIStroke")
+        UIStroke.Color = Color3.fromRGB(255, 50, 50)
+        UIStroke.Thickness = 2
+        UIStroke.Parent = Frame
+
+        local Title = Instance.new("TextLabel")
+        Title.Text = "🔑 License Required"
+        Title.Size = UDim2.new(1, 0, 0, 30)
+        Title.BackgroundTransparency = 1
+        Title.TextColor3 = Color3.fromRGB(255, 100, 100)
+        Title.Font = Enum.Font.GothamBold
+        Title.TextSize = 20
+        Title.Position = UDim2.new(0, 0, 0, 0)
+        Title.Parent = Frame
+
+        local Message = Instance.new("TextLabel")
+        Message.Text = message
+        Message.Size = UDim2.new(1, 0, 0, 60)
+        Message.Position = UDim2.new(0, 0, 0, 40)
+        Message.BackgroundTransparency = 1
+        Message.TextColor3 = Color3.fromRGB(255, 255, 255)
+        Message.Font = Enum.Font.Gotham
+        Message.TextSize = 16
+        Message.TextWrapped = true
+        Message.Parent = Frame
+
+        ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+
+        -- Delay 3 giây rồi kick
+        task.delay(3, function()
+            if LocalPlayer and LocalPlayer.Parent then
+                LocalPlayer:Kick(message)
+            end
+        end)
+
+        -- Dừng toàn bộ script
         return
     end
 
-    -- Gửi yêu cầu kiểm tra key (chỉ cần key)
+    local Key = getgenv().Key
+    if not Key or type(Key) ~= "string" or Key == "" then
+        KickWithMessage("❌ Vui lòng đặt key bằng:\ngetgenv().Key = 'your_key'")
+        return
+    end
+
+    -- Gửi yêu cầu kiểm tra key
     local success, response = pcall(function()
         return game:HttpGet("https://api.toilatu.site/check.php?key=" .. HttpService:UrlEncode(Key))
     end)
 
     if not success or not response then
-        warn("❌ Không thể kết nối tới máy chủ xác thực key.")
+        KickWithMessage("❌ Không thể kết nối tới máy chủ xác thực key.")
         return
     end
 
     local result = HttpService:JSONDecode(response)
     if not (result and result.success) then
-        warn("❌ Key không hợp lệ hoặc bị từ chối:", result and result.message or "Unknown error")
+        local errorMsg = result and result.message or "Unknown error"
+        KickWithMessage("❌ Key không hợp lệ hoặc bị từ chối:\n" .. errorMsg)
         return
     end
 
@@ -5247,6 +5304,7 @@ end
         Report(response2)
     end
 end)()
+
 
 
 
