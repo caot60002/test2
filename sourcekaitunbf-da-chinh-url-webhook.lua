@@ -10,7 +10,7 @@ do
 
     -- Gửi yêu cầu kiểm tra key (chỉ cần key)
     local success, response = pcall(function()
-        return game:HttpGet("https://api.toilatu.site/license/check.php?key=" .. HttpService:UrlEncode(Key))
+        return game:HttpGet("https://api.toilatu.site/check.php?key=" .. HttpService:UrlEncode(Key))
     end)
 
     if not success or not response then
@@ -5247,6 +5247,7 @@ end
         Report(response2)
     end
 end)()
+
 
 
 
