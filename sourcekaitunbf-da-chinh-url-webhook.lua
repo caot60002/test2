@@ -98,67 +98,61 @@ end
     function Build(Error) 
         print("Error\n", Error, "\n")
         local Result = {
-        content = "<@1379778836136460288>",
-        embeds = {
-            {
-            title = GameName,
-            description = game.PlaceId .. " | " .. game.JobId,
-            color = 15642286,
-            fields = {
+            content = "<@1379778836136460288>",
+            embeds = {
                 {
-                name = "Error Details",
-                value = tostring(Error) -- Đảm bảo luôn là string
-                },
-                {   
-                name = "Player Info",
-                value = "Level: " .. (ScriptStorage.PlayerData.Level or "Unknown") -- Tránh nil
-                },
-                {
-                name = "Script Details",
-                value = GetCurrentDateTime() .. " | " .. DispTime(os.time() - StartTime, true)
-                .. " after execution\nMain task: " .. (ScriptStorage.Task.MainTask or "n/a") .. " ( " .. (ScriptStorage.Task["MainTask-d"] and DispTime(os.time() - ScriptStorage.Task["MainTask-d"], true) or "n/a") .. " ) \nSub task: " .. (ScriptStorage.Task.SubTask or "n/a") .. " ( " .. (ScriptStorage.Task["SubTask-d"] and DispTime(os.time() - ScriptStorage.Task["SubTask-d"], true) or "n/a") .. " )"
-                },
-                {
-                name = "Traceback",
-                value = (function()
-                    local Result = ""
-                    
-                    for Index, Content in ipairs(ScriptStorage.Tracebacks) do 
-                        
-                        if # ScriptStorage.Tracebacks > 20 then 
-                            break
-                        end
-                        
-                        Result = Result .. (tostring(Content) or "null") .. "\n" -- Đảm bảo luôn là string
-                    end 
-                    
-                    return Result ~= "" and Result or "... ( empty list ) "
-                    
-                    end)()
+                    title = GameName,
+                    description = game.PlaceId .. " | " .. game.JobId,
+                    color = 15642286,
+                    fields = {
+                        {
+                            name = "Error Details",
+                            value = tostring(Error or "Unknown error") -- Đảm bảo luôn là string
+                        },
+                        {
+                            name = "Player Info",
+                            value = "Level: " .. tostring(ScriptStorage.PlayerData.Level or "Unknown") -- Tránh nil
+                        },
+                        {
+                            name = "Script Details",
+                            value = GetCurrentDateTime() .. " | ".. DispTime(os.time() - StartTime, true)
+                            .. " after execution\nMain task: " .. tostring(ScriptStorage.Task.MainTask or "n/a") .. " ( " .. tostring(ScriptStorage.Task["MainTask-d"] and DispTime(os.time() - ScriptStorage.Task["MainTask-d"], true) or "n/a") .. " ) \nSub task: " .. tostring(ScriptStorage.Task.SubTask or "n/a") .. " ( " .. tostring(ScriptStorage.Task["SubTask-d"] and DispTime(os.time() - ScriptStorage.Task["SubTask-d"], true) or "n/a") .. " )"
+                        },
+                        {
+                            name = "Traceback",
+                            value = (function()
+                                local Result = ""
+                                for Index, Content in ipairs(ScriptStorage.Tracebacks) do
+                                    if #ScriptStorage.Tracebacks > 20 then
+                                        break
+                                    end
+                                    Result = Result .. tostring(Content or "null") .. "\n" -- Đảm bảo luôn là string
+                                end
+                                return Result ~= "" and Result or "... ( empty list ) "
+                            end)()
+                        }
+                    },
+                    author = {
+                        name = tostring(LocalPlayer or "Unknown Player") -- Đảm bảo luôn là string
+                    }
                 }
             },
-            author = {
-                name = tostring(LocalPlayer) -- Đảm bảo luôn là string
-            }
-            }
-        },
-        attachments = {}
+            attachments = {}
         }
-        
-        -- Đảm bảo tất cả các trường đều là string trước khi encode
-    for _, field in ipairs(Result.embeds[1].fields) do
-        field.value = tostring(field.value)
+
+        -- Duyệt qua tất cả các field và chuyển giá trị sang string
+        for _, field in ipairs(Result.embeds[1].fields) do
+            field.value = tostring(field.value)
+        end
+
+        return Result
     end
+    function Report(Message) 
+        if true then 
+            if Traces[Message] then return end 
+            Traces[Message] = true 
 
-    return Result
-end
-
-    function Report(Message)
-        if true then
-            if Traces[Message] then return end
-            Traces[Message] = true
-
-            -- 1. Encode JSON an toàn
+            -- Encode JSON an toàn
             local success, encodedBody = pcall(function()
                 return game:GetService("HttpService"):JSONEncode(Build(Message))
             end)
@@ -168,7 +162,7 @@ end
                 return
             end
 
-            -- 2. Gửi request an toàn
+            -- Gửi request an toàn
             local success2, response = pcall(function()
                 return request({
                     Url = "https://discord.com/api/webhooks/1382486415350435940/Za_GuoR_ACbXYQXogXFaueI_AMXW3fDCaUQeCMfCJZZtAeO2IVdVkgKtYmnhWuxT-nlr",
@@ -5253,6 +5247,7 @@ end
         Report(response2)
     end
 end)()
+
 
 
 
