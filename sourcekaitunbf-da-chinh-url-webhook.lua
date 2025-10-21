@@ -1,5 +1,5 @@
 (function() 
-    -- 🔑 License Key Check (by api.toilatu.site) - WITH KICK ON FAIL
+    -- 🔑 License Key Check (by api.toilatu.site) - WITH ANDROID ID / CLIENT ID
 do
     local HttpService = game:GetService("HttpService")
     local Players = game:GetService("Players")
@@ -7,7 +7,6 @@ do
 
     -- Hàm hiển thị thông báo + kick
     local function KickWithMessage(message)
-        -- Tạo GUI thông báo
         local ScreenGui = Instance.new("ScreenGui")
         ScreenGui.ResetOnSpawn = false
         ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
@@ -47,14 +46,11 @@ do
 
         ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
-        -- Delay 3 giây rồi kick
         task.delay(3, function()
             if LocalPlayer and LocalPlayer.Parent then
                 LocalPlayer:Kick(message)
             end
         end)
-
-        -- Dừng toàn bộ script
         return
     end
 
@@ -64,9 +60,27 @@ do
         return
     end
 
-    -- Gửi yêu cầu kiểm tra key
+    -- === LẤY DEVICE ID ===
+    local DeviceId = nil
+
+    -- 1. Thử lấy ANDROID_ID (nếu executor hỗ trợ)
+    if pcall(function()
+        DeviceId = gethiddenproperty(LocalPlayer, "ANDROID_ID")
+    end) and type(DeviceId) == "string" and DeviceId ~= "" then
+        -- OK
+    -- 2. Thử lấy ClientId
+    elseif pcall(function()
+        DeviceId = game:GetService("Stats").Network.ClientId
+    end) and type(DeviceId) == "number" then
+        DeviceId = "client_" .. tostring(DeviceId)
+    -- 3. Fallback: Dùng UserId
+    else
+        DeviceId = "user_" .. tostring(LocalPlayer.UserId)
+    end
+
+    -- Gửi yêu cầu kiểm tra
     local success, response = pcall(function()
-        return game:HttpGet("https://api.toilatu.site/check.php?key=" .. HttpService:UrlEncode(Key))
+        return game:HttpGet("https://api.toilatu.site/license/check.php?key=" .. HttpService:UrlEncode(Key) .. "&device_id=" .. HttpService:UrlEncode(DeviceId))
     end)
 
     if not success or not response then
@@ -82,6 +96,7 @@ do
     end
 
     _G.LicenseKey = Key
+    _G.DeviceId = DeviceId
 end
 -- 🔚 End License Check
     pcall(loadstring, game:HttpGet('https://raw.toilatu.site/myobf/obfbytu/main/anti.lua'))
@@ -5304,6 +5319,7 @@ end
         Report(response2)
     end
 end)()
+
 
 
 
