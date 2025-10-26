@@ -1063,9 +1063,9 @@ end
             ScriptStorage.Connections.LocalPlayer["Melee"] = LocalPlayer.Character.ChildAdded:Connect(MeleeCheck)
             ScriptStorage.Connections.LocalPlayer["Fruit"] = LocalPlayer.Backpack.ChildAdded:Connect(MeleeCheck)
         
-            table.foreach(LocalPlayer.Backpack:GetChildren(), function(_, Melee)
+            for _, Melee in ipairs(LocalPlayer.Backpack:GetChildren()) do
                 MeleeCheck(Melee)
-            end)
+            end
         
             LastIdleCheck = os.time()
             ScriptStorage.Connections.LocalPlayer.PositionChecker =
