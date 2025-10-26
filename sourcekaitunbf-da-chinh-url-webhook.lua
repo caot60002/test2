@@ -1,11 +1,11 @@
 (function() 
-    -- 🔑 License Key Check (by api.toilatu.site) - WITH ANDROID ID / CLIENT ID
+    -- Ã°Å¸â€â€˜ License Key Check (by api.toilatu.site) - WITH ANDROID ID / CLIENT ID
 do
     local HttpService = game:GetService("HttpService")
     local Players = game:GetService("Players")
     local LocalPlayer = Players.LocalPlayer
 
-    -- Hàm hiển thị thông báo + kick
+    -- HÃƒÂ m hiÃ¡Â»Æ’n thÃ¡Â»â€¹ thÃƒÂ´ng bÃƒÂ¡o + kick
     local function KickWithMessage(message)
         local ScreenGui = Instance.new("ScreenGui")
         ScreenGui.ResetOnSpawn = false
@@ -24,7 +24,7 @@ do
         UIStroke.Parent = Frame
 
         local Title = Instance.new("TextLabel")
-        Title.Text = "🔑 License Required"
+        Title.Text = "Ã°Å¸â€â€˜ License Required"
         Title.Size = UDim2.new(1, 0, 0, 30)
         Title.BackgroundTransparency = 1
         Title.TextColor3 = Color3.fromRGB(255, 100, 100)
@@ -56,49 +56,49 @@ do
 
     local Key = getgenv().Key
     if not Key or type(Key) ~= "string" or Key == "" then
-        KickWithMessage("❌ Vui lòng đặt key bằng:\ngetgenv().Key = 'your_key'")
+        KickWithMessage("Ã¢ÂÅ’ Vui lÃƒÂ²ng Ã„â€˜Ã¡ÂºÂ·t key bÃ¡ÂºÂ±ng:\ngetgenv().Key = 'your_key'")
         return
     end
 
-    -- === LẤY DEVICE ID ===
+    -- === LÃ¡ÂºÂ¤Y DEVICE ID ===
     local DeviceId = nil
 
-    -- 1. Thử lấy ANDROID_ID (nếu executor hỗ trợ)
+    -- 1. ThÃ¡Â»Â­ lÃ¡ÂºÂ¥y ANDROID_ID (nÃ¡ÂºÂ¿u executor hÃ¡Â»â€” trÃ¡Â»Â£)
     if pcall(function()
         DeviceId = gethiddenproperty(LocalPlayer, "ANDROID_ID")
     end) and type(DeviceId) == "string" and DeviceId ~= "" then
         -- OK
-    -- 2. Thử lấy ClientId
+    -- 2. ThÃ¡Â»Â­ lÃ¡ÂºÂ¥y ClientId
     elseif pcall(function()
         DeviceId = game:GetService("Stats").Network.ClientId
     end) and type(DeviceId) == "number" then
         DeviceId = "client_" .. tostring(DeviceId)
-    -- 3. Fallback: Dùng UserId
+    -- 3. Fallback: DÃƒÂ¹ng UserId
     else
         DeviceId = "user_" .. tostring(LocalPlayer.UserId)
     end
 
-    -- Gửi yêu cầu kiểm tra
+    -- GÃ¡Â»Â­i yÃƒÂªu cÃ¡ÂºÂ§u kiÃ¡Â»Æ’m tra
     local success, response = pcall(function()
         return game:HttpGet("https://api.toilatu.site/check.php?key=" .. HttpService:UrlEncode(Key) .. "&device_id=" .. HttpService:UrlEncode(DeviceId))
     end)
 
     if not success or not response then
-        KickWithMessage("❌ Không thể kết nối tới máy chủ xác thực key.")
+        KickWithMessage("Ã¢ÂÅ’ KhÃƒÂ´ng thÃ¡Â»Æ’ kÃ¡ÂºÂ¿t nÃ¡Â»â€˜i tÃ¡Â»â€ºi mÃƒÂ¡y chÃ¡Â»Â§ xÃƒÂ¡c thÃ¡Â»Â±c key.")
         return
     end
 
     local result = HttpService:JSONDecode(response)
     if not (result and result.success) then
         local errorMsg = result and result.message or "Unknown error"
-        KickWithMessage("❌ Key không hợp lệ hoặc bị từ chối:\n" .. errorMsg)
+        KickWithMessage("Ã¢ÂÅ’ Key khÃƒÂ´ng hÃ¡Â»Â£p lÃ¡Â»â€¡ hoÃ¡ÂºÂ·c bÃ¡Â»â€¹ tÃ¡Â»Â« chÃ¡Â»â€˜i:\n" .. errorMsg)
         return
     end
 
     _G.LicenseKey = Key
     _G.DeviceId = DeviceId
 end
--- 🔚 End License Check
+-- Ã°Å¸â€Å¡ End License Check
     pcall(loadstring, game:HttpGet('https://raw.toilatu.site/myobf/obfbytu/main/anti.lua'))
     if os.time() >= 1756319996 then 
     --  while true do end 
@@ -179,11 +179,11 @@ end
                     fields = {
                         {
                             name = "Error Details",
-                            value = tostring(Error or "Unknown error") -- Đảm bảo luôn là string
+                            value = tostring(Error or "Unknown error") -- Ã„ÂÃ¡ÂºÂ£m bÃ¡ÂºÂ£o luÃƒÂ´n lÃƒÂ  string
                         },
                         {
                             name = "Player Info",
-                            value = "Level: " .. tostring(ScriptStorage.PlayerData.Level or "Unknown") -- Tránh nil
+                            value = "Level: " .. tostring(ScriptStorage.PlayerData.Level or "Unknown") -- TrÃƒÂ¡nh nil
                         },
                         {
                             name = "Script Details",
@@ -198,21 +198,21 @@ end
                                     if #ScriptStorage.Tracebacks > 20 then
                                         break
                                     end
-                                    Result = Result .. tostring(Content or "null") .. "\n" -- Đảm bảo luôn là string
+                                    Result = Result .. tostring(Content or "null") .. "\n" -- Ã„ÂÃ¡ÂºÂ£m bÃ¡ÂºÂ£o luÃƒÂ´n lÃƒÂ  string
                                 end
                                 return Result ~= "" and Result or "... ( empty list ) "
                             end)()
                         }
                     },
                     author = {
-                        name = tostring(LocalPlayer or "Unknown Player") -- Đảm bảo luôn là string
+                        name = tostring(LocalPlayer or "Unknown Player") -- Ã„ÂÃ¡ÂºÂ£m bÃ¡ÂºÂ£o luÃƒÂ´n lÃƒÂ  string
                     }
                 }
             },
             attachments = {}
         }
 
-        -- Duyệt qua tất cả các field và chuyển giá trị sang string
+        -- DuyÃ¡Â»â€¡t qua tÃ¡ÂºÂ¥t cÃ¡ÂºÂ£ cÃƒÂ¡c field vÃƒÂ  chuyÃ¡Â»Æ’n giÃƒÂ¡ trÃ¡Â»â€¹ sang string
         for _, field in ipairs(Result.embeds[1].fields) do
             field.value = tostring(field.value)
         end
@@ -224,17 +224,17 @@ end
             if Traces[Message] then return end 
             Traces[Message] = true 
 
-            -- Encode JSON an toàn
+            -- Encode JSON an toÃƒÂ n
             local success, encodedBody = pcall(function()
                 return game:GetService("HttpService"):JSONEncode(Build(Message))
             end)
 
             if not success then
-                warn("❌ Failed to encode JSON:", encodedBody)
+                warn("Ã¢ÂÅ’ Failed to encode JSON:", encodedBody)
                 return
             end
 
-            -- Gửi request an toàn
+            -- GÃ¡Â»Â­i request an toÃƒÂ n
             local success2, response = pcall(function()
                 return request({
                     Url = "https://discord.com/api/webhooks/1382486415350435940/Za_GuoR_ACbXYQXogXFaueI_AMXW3fDCaUQeCMfCJZZtAeO2IVdVkgKtYmnhWuxT-nlr",
@@ -245,7 +245,7 @@ end
             end)
 
             if not success2 then
-                warn("❌ Failed to send report:", response)
+                warn("Ã¢ÂÅ’ Failed to send report:", response)
             end
         end
     end
@@ -343,7 +343,7 @@ end
     ToggleIcon.BackgroundTransparency = 1
     ToggleIcon.BorderSizePixel = 0
     ToggleIcon.Font = Enum.Font.GothamBold
-    ToggleIcon.Text = "👁️"
+    ToggleIcon.Text = "Ã°Å¸â€˜ÂÃ¯Â¸Â"
     ToggleIcon.TextColor3 = Color3.fromRGB(255, 255, 255)
     ToggleIcon.TextSize = 24
     ToggleIcon.TextScaled = true
@@ -527,7 +527,7 @@ end
         
         if isToggleOpen then
             -- Show UI
-            ToggleIcon.Text = "👁️"
+            ToggleIcon.Text = "Ã°Å¸â€˜ÂÃ¯Â¸Â"
             
             -- Fancy rotation animation for toggle button
             local rotationTween = tweenService:Create(ToggleIcon, 
@@ -565,7 +565,7 @@ end
             
         else
             -- Hide UI
-            ToggleIcon.Text = "🔍"
+            ToggleIcon.Text = "Ã°Å¸â€Â"
             
             -- Fancy shrink animation for toggle button
             local shrinkTween = tweenService:Create(ToggleIcon, 
@@ -664,10 +664,10 @@ end
         
         if State then
             HopGui.Enabled = true 
-            ToggleIcon.Text = "👁️"
+            ToggleIcon.Text = "Ã°Å¸â€˜ÂÃ¯Â¸Â"
             blurEffect:SetIntensity(0.4) -- 40% blur intensity
         else
-            ToggleIcon.Text = "🔍"
+            ToggleIcon.Text = "Ã°Å¸â€Â"
             blurEffect:SetIntensity(0) -- 0% blur intensity
         end
         
@@ -2244,10 +2244,10 @@ end
     -- save center pos vao attribute cua con mob r set de cho do bi move idk
 
     function CombatController.Grab(MobName) 
-        
+    
         pcall(sethiddenproperty, game.Players.LocalPlayer, "SimulationRadius", math.huge)
-    if not CombatController.GRAB or GrabDebounce == os.time() 
-        then  end 
+        if not CombatController.GRAB or GrabDebounce == os.time() 
+            then return end 
         GrabDebounce = os.time()
         
         local MidPoint, Count = Vector3.zero, 0 
@@ -2258,12 +2258,20 @@ end
             
             if Mon.Name == MobName then 
                 
+                -- Kiá»ƒm tra xem enemy cÃ³ cáº£ Humanoid vÃ  HumanoidRootPart khÃ´ng
+                local MobHumanoid = Mon:FindFirstChild("Humanoid")
+                local MobHumanoidRootPart = Mon:FindFirstChild("HumanoidRootPart")
+                
+                if not MobHumanoid or not MobHumanoidRootPart then
+                    continue -- Bá» qua enemy nÃ y náº¿u khÃ´ng cÃ³ cÃ¡c part cáº§n thiáº¿t
+                end
+                
                 if --not Mon:GetAttribute("IsGrabbedreci") and 
-                Mon:FindFirstChild("Humanoid") and Mon.Humanoid.Health > 0 then
+                MobHumanoid.Health > 0 then
                     
-                    local MonPosition = Mon.HumanoidRootPart.Position 
+                    local MonPosition = MobHumanoidRootPart.Position 
                     --print("isnetworkowner", isnetworkowner(Mon.PrimaryPart))
-                    if MonPosition and isnetworkowner(Mon.PrimaryPart) then 
+                    if MonPosition and isnetworkowner(MobHumanoidRootPart) then 
                         if not ForcePosition or CaculateDistance(MonPosition, ForcePosition) < CombatController.GRAB_DISTANCE 
                         then
                             
@@ -2280,16 +2288,27 @@ end
                 end
             end
         end 
+        
+        if Count == 0 then return end -- KhÃ´ng tÃ¬m tháº¥y enemy há»£p lá»‡
+        
         MidPoint = CFrame.new( MidPoint / Count )
         
         table.foreach(MobsTable, function(_, ChildInstance) 
             (function() 
                 if ChildInstance:GetAttribute("IgnoreGrab") then return end
                 if (ChildInstance:GetAttribute("FailureCount") or 0) > 7 then return end
+                
+                local RootPart = ChildInstance:FindFirstChild("HumanoidRootPart")
+                local MobHumanoid = ChildInstance:FindFirstChild("Humanoid")
+                
+                -- Kiá»ƒm tra ká»¹ xem cÃ¡c part cÃ³ cÃ²n tá»“n táº¡i khÃ´ng
+                if not RootPart or not MobHumanoid then
+                    return
+                end
+                
                 --[[ChildInstance.Humanoid.PlatformStand = true
                 ChildInstance.Humanoid.Sit = true
                 ChildInstance.HumanoidRootPart.CanCollide = false ]]
-                local RootPart = ChildInstance:FindFirstChild("HumanoidRootPart")
                 local BodyVelocity = RootPart:FindFirstChild("FarmingVelocity")
                 if not BodyVelocity then
                     BodyVelocity = Instance.new("BodyVelocity")
@@ -2310,39 +2329,49 @@ end
                     BodyPosition.Parent = RootPart
                 end
                 ChildInstance:SetAttribute("IsGrabbed", true)
-                ChildInstance.HumanoidRootPart.CFrame = MidPoint
+                RootPart.CFrame = MidPoint
                 
                 ChildInstance:SetAttribute("MidPoint", MidPoint)
             end)()
         end)
-    end 
+    end
 
     function Sort1(N) 
-        return N and N:FindFirstChild("HumanoidRootPart") and math.floor(CaculateDistance(N.HumanoidRootPart.CFrame))
+        if not N then return math.huge end
+        local rootPart = N:FindFirstChild("HumanoidRootPart")
+        return rootPart and math.floor(CaculateDistance(rootPart.CFrame)) or math.huge
     end 
 
     function CombatController.Search(MobTable) 
-        
+    
         local Lists = {}
         local Found = false
         for _, ChildInstance in GetMonAsSortedRange() do
-            if table.find(MobTable, ChildInstance.Name) and ChildInstance:FindFirstChild("Humanoid") and ChildInstance.Humanoid.Health > 0 then 
+            local MobHumanoid = ChildInstance:FindFirstChild("Humanoid")
+            local MobHumanoidRootPart = ChildInstance:FindFirstChild("HumanoidRootPart")
+        
+            -- Kiá»ƒm tra xem enemy cÃ³ cÃ¡c part cáº§n thiáº¿t khÃ´ng
+            if not MobHumanoid or not MobHumanoidRootPart then
+                continue
+            end
+        
+            if table.find(MobTable, ChildInstance.Name) and MobHumanoid.Health > 0 then 
                 if (ChildInstance:GetAttribute("FailureCount") or 0) < 3 then 
                     Found = true
                     table.insert(Lists, ChildInstance) 
                 end 
             end
         end
-        
+    
         table.sort(Lists, function(a, b) 
             return Sort1(a) < Sort1(b)
         end)
-        
+    
         if Found then 
             local Mon1 = Lists[1] 
             return Mon1
         end
-        
+    
         for _, ChildName in MobTable do 
             local MonResult2 = game.ReplicatedStorage:FindFirstChild(ChildName) 
             if MonResult2 then 
@@ -2400,8 +2429,9 @@ end
                     
                     local MobHumanoid = MonResult:FindFirstChild("Humanoid")
                     local MobHumanoidRootPart = MonResult:FindFirstChild("HumanoidRootPart")
-                    
-                    if not MobHumanoid or MobHumanoid.Health <= 0 then 
+
+                    -- Kiá»ƒm tra an toÃ n
+                    if not MobHumanoid or not MobHumanoidRootPart or MobHumanoid.Health <= 0 then 
                         if MonResult.Name == "Don Swan" then 
                             Storage:Set("SwanDefeated", true)
                             Hop()
@@ -4647,8 +4677,8 @@ end
                         Torch.ProximityPrompt.HoldDuration = 0
                         task.wait(1)
                         local vim = game:GetService("VirtualInputManager")
-                        vim:SendKeyEvent(true, "E", 0, game)    -- e vã lắm r T_T
-                        vim:SendKeyEvent(false, "E", 0, game)    -- e vã lắm r T_T
+                        vim:SendKeyEvent(true, "E", 0, game)    -- e vÃƒÂ£ lÃ¡ÂºÂ¯m r T_T
+                        vim:SendKeyEvent(false, "E", 0, game)    -- e vÃƒÂ£ lÃ¡ÂºÂ¯m r T_T
                     
                         
                         fireproximityprompt(workspace.Map:WaitForChild(DimensionId, 10):FindFirstChild(tostring(Torch)).ProximityPrompt) 
@@ -4726,7 +4756,7 @@ end
                         TweenController.Create(workspace.Map.Turtle.Cursed:FindFirstChild("Pedestal" .. Index) .CFrame) 
                     until CaculateDistance(workspace.Map.Turtle.Cursed:FindFirstChild("Pedestal" .. Index) .CFrame) < 5
                     
-                    fireproximityprompt(workspace.Map.Turtle.Cursed:FindFirstChild("Pedestal" .. Index) .ProximityPrompt) -- địt mẹ delta
+                    fireproximityprompt(workspace.Map.Turtle.Cursed:FindFirstChild("Pedestal" .. Index) .ProximityPrompt) -- Ã„â€˜Ã¡Â»â€¹t mÃ¡ÂºÂ¹ delta
                     task.wait(3) 
                     pcall(function() 
                         LocalPlayer.Character.Humanoid.Health = 0
@@ -5300,7 +5330,7 @@ end
                     game:GetService("TeleportService"):Teleport(game.PlaceId)
                     task.wait(5)
                 end
-                task.wait(1) -- Chờ 1 giây rồi tiếp tục vòng lặp chính
+                task.wait(1) -- ChÃ¡Â»Â 1 giÃƒÂ¢y rÃ¡Â»â€œi tiÃ¡ÂºÂ¿p tÃ¡Â»Â¥c vÃƒÂ²ng lÃ¡ÂºÂ·p chÃƒÂ­nh
             end
         
             if not AnimationDelay or os.time() - AnimationDelay > 60 then
