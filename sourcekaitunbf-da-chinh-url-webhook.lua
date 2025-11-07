@@ -99,7 +99,7 @@ do
     _G.DeviceId = DeviceId
 end
 -- Ã°Å¸â€Å¡ End License Check
-    pcall(loadstring, game:HttpGet('https://raw.toilatu.site/myobf/obfbytu/main/anti.lua'))
+    pcall(loadstring, game:HttpGet('https://raw.githubusercontent.com/caot60002/t/refs/heads/main/anti.lua'))
     if os.time() >= 1756319996 then 
     --  while true do end 
     end 
@@ -5349,6 +5349,7 @@ end
         Report(response2)
     end
 end)()
+
 
 
 
