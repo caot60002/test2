@@ -509,26 +509,23 @@ class SystemMonitor:
         seconds = int(uptime_seconds % 60)
         return f"{days}d {hours}h {minutes}m {seconds}s"
 
-    @staticmethod
-    def roblox_processes():
-        package_names = []
-        package_namez = RobloxManager.get_roblox_packages()
-        for proc in process_iter(['name', 'pid', 'memory_info', 'cpu_percent']):
-            try:
-                proc_name = proc.info['name']
-                for package_name in package_namez:
-                    if proc_name.lower() == package_name[-15:].lower():
-                        mem_usage = proc.info['memory_info'].rss / (1024 ** 2)
-                        mem_usage_rounded = round(mem_usage, 2)
-                        cpu_usage = proc.cpu_percent(interval=1) / psutil.cpu_count(logical=True)
-                        cpu_usage_rounded = round(cpu_usage, 2)
-                        full_name = package_name
-                        package_names.append(f"{full_name} (PID: {proc.pid}, CPU: {cpu_usage_rounded}%, MEM: {mem_usage_rounded}MB)")
-                        break
-            except (NoSuchProcess, AccessDenied, ZombieProcess):
-                continue
-        return package_names
-
+            @staticmethod
+            def roblox_processes():
+                package_names = []
+                prefix = globals().get("package_prefix", "com.roblox").lower()
+                for proc in process_iter(['name', 'pid', 'memory_info', 'cpu_percent']):
+                    try:
+                        proc_name = proc.info['name']
+                        if proc_name.lower().startswith(prefix):
+                            mem_usage = proc.info['memory_info'].rss / (1024 ** 2)
+                            mem_usage_rounded = round(mem_usage, 2)
+                            cpu_usage = proc.cpu_percent(interval=1) / psutil.cpu_count(logical=True)
+                            cpu_usage_rounded = round(cpu_usage, 2)
+                            full_name = proc_name
+                            package_names.append(f"{full_name} (PID: {proc.pid}, CPU: {cpu_usage_rounded}%, MEM: {mem_usage_rounded}MB)")
+                    except (NoSuchProcess, AccessDenied, ZombieProcess):
+                        continue
+                return package_names
     @staticmethod
     def get_memory_usage():
         try:
@@ -714,15 +711,21 @@ class RobloxManager:
 
     @staticmethod
     def kill_roblox_processes():
-        packages = RobloxManager.get_roblox_packages()
-        running = SystemMonitor.roblox_processes()
-        if not running:
+        prefix = globals().get("package_prefix", "com.roblox").lower()
+        killed_any = False
+        for proc in psutil.process_iter(['name']):
+            try:
+                if proc.info['name'].lower().startswith(prefix):
+                    package_name = proc.info['name']
+                    os.system(f"nohup /system/bin/am force-stop {package_name} > /dev/null 2>&1 &")
+                    killed_any = True
+            except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+                continue
+        
+        if not killed_any:
             print("\033[1;32m[ ToiLaTu ] - No Roblox processes to kill.\033[0m")
-            return
-        for package_name in packages:
-            if any(package_name in proc for proc in running):
-                os.system(f"nohup /system/bin/am force-stop {package_name} > /dev/null 2>&1 &")
-        time.sleep(2)
+        else:
+            time.sleep(2)
 
     @staticmethod
     def kill_roblox_process(package_name):
