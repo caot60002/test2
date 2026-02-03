@@ -513,13 +513,17 @@ class SystemMonitor:
     def roblox_processes():
         package_names = []
         prefix = globals().get("package_prefix", "com.roblox").lower()
+        print(f"[DEBUG] Using prefix: '{prefix}'")
         for proc in process_iter(['name', 'pid']):
             try:
                 proc_name = proc.info['name']
+                print(f"[DEBUG] Found process: '{proc_name}'")
                 if proc_name.lower().startswith(prefix):
+                    print(f"[DEBUG] MATCH FOUND: '{proc_name}' starts with '{prefix}'")
                     package_names.append(f"{proc_name} (PID: {proc.pid})")
             except (NoSuchProcess, AccessDenied, ZombieProcess):
                 continue
+        print(f"[DEBUG] Final list of detected packages: {package_names}")
         return package_names
 
     @staticmethod
