@@ -513,16 +513,11 @@ class SystemMonitor:
     def roblox_processes():
         package_names = []
         prefix = globals().get("package_prefix", "com.roblox").lower()
-        for proc in process_iter(['name', 'pid', 'memory_info', 'cpu_percent']):
+        for proc in process_iter(['name', 'pid']):
             try:
                 proc_name = proc.info['name']
                 if proc_name.lower().startswith(prefix):
-                    mem_usage = proc.info['memory_info'].rss / (1024 ** 2)
-                    mem_usage_rounded = round(mem_usage, 2)
-                    cpu_usage = proc.cpu_percent(interval=1) / psutil.cpu_count(logical=True)
-                    cpu_usage_rounded = round(cpu_usage, 2)
-                    full_name = proc_name
-                    package_names.append(f"{full_name} (PID: {proc.pid}, CPU: {cpu_usage_rounded}%, MEM: {mem_usage_rounded}MB)")
+                    package_names.append(f"{proc_name} (PID: {proc.pid})")
             except (NoSuchProcess, AccessDenied, ZombieProcess):
                 continue
         return package_names
@@ -711,7 +706,7 @@ class RobloxManager:
         return packages
 
     @staticmethod
-    def kill_roblox_processes():
+    def kill_roblox_processes(silent=False):
         prefix = globals().get("package_prefix", "com.roblox").lower()
         killed_any = False
         for proc in psutil.process_iter(['name']):
@@ -724,7 +719,8 @@ class RobloxManager:
                 continue
         
         if not killed_any:
-            print("\033[1;32m[ ToiLaTu ] - No Roblox processes to kill.\033[0m")
+            if not silent:
+                print("\033[1;32m[ ToiLaTu ] - No Roblox processes to kill.\033[0m")
         else:
             time.sleep(2)
 
