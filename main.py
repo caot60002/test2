@@ -1810,8 +1810,7 @@ def main():
             "Auto Check User Setup",
             "Toggle Codex Bypass - OLD",
             "Configure Package Prefix - NEW",
-            "Auto Change Android ID - NEW",
-            "Debug - List All Processes"
+            "Auto Change Android ID - NEW"
         ]
 
         UIManager.create_dynamic_menu(menu_options)
