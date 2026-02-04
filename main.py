@@ -47,11 +47,11 @@ boot_time = boot_time()
 
 def check_executor_online(uid):
     try:
-        r = requests.get(f"https://check-host-two.vercel.app/api/status/{uid}", timeout=5)
-        if r.status_code == 200 and r.json().get("status") == "online":            
+        r = requests.get(f"https://user-presence-api.vercel.app/api/status/{uid}", timeout=5)
+        if r.status_code == 200 and r.text.strip().lower() == "online":
             return True
     except Exception:
-        pass   
+        pass
     return False
 
 auto_android_id_enabled = False
@@ -510,23 +510,6 @@ class SystemMonitor:
         return f"{days}d {hours}h {minutes}m {seconds}s"
 
     @staticmethod
-    def roblox_processes():
-        package_names = []
-        prefix = globals().get("package_prefix", "com.roblox").lower()
-        print(f"[DEBUG] Using prefix: '{prefix}'")
-        for proc in process_iter(['name', 'pid']):
-            try:
-                proc_name = proc.info['name']
-                print(f"[DEBUG] Found process: '{proc_name}'")
-                if proc_name.lower().startswith(prefix):
-                    print(f"[DEBUG] MATCH FOUND: '{proc_name}' starts with '{prefix}'")
-                    package_names.append(f"{proc_name} (PID: {proc.pid})")
-            except (NoSuchProcess, AccessDenied, ZombieProcess):
-                continue
-        print(f"[DEBUG] Final list of detected packages: {package_names}")
-        return package_names
-
-    @staticmethod
     def get_memory_usage():
         try:
             process = Process(os.getpid())
@@ -549,7 +532,7 @@ class SystemMonitor:
                 "memory_used": round(memory_info.used / (1024 ** 3), 2),
                 "memory_percent": memory_info.percent,
                 "uptime": SystemMonitor.get_uptime(),
-                "roblox_packages": SystemMonitor.roblox_processes()
+                "roblox_packages": globals().get("roblox_process_list", [])
             }
             return system_info
         except Exception as e:
@@ -713,15 +696,30 @@ class RobloxManager:
     def kill_roblox_processes(silent=False):
         prefix = globals().get("package_prefix", "com.roblox").lower()
         killed_any = False
-        for proc in psutil.process_iter(['name']):
+        for proc in psutil.process_iter(['name', 'cmdline']):
             try:
+                package_name = None
+
+                # Check process name first (for standard Android apps)
                 if proc.info['name'].lower().startswith(prefix):
                     package_name = proc.info['name']
+                else:
+                    # Check cmdline for package name (for cloned apps)
+                    cmdline = proc.info.get('cmdline', [])
+                    if cmdline and len(cmdline) > 0:
+                        cmd_package = cmdline[0]
+                        if cmd_package and prefix in cmd_package.lower():
+                            package_name = cmd_package
+
+                if package_name:
                     os.system(f"nohup /system/bin/am force-stop {package_name} > /dev/null 2>&1 &")
+                    if not silent:
+                        print(f"\033[1;96m[ ToiLaTu ] - Killing process: {package_name}\033[0m")
                     killed_any = True
+
             except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
                 continue
-        
+
         if not killed_any:
             if not silent:
                 print("\033[1;32m[ ToiLaTu ] - No Roblox processes to kill.\033[0m")
@@ -944,9 +942,35 @@ class WebhookManager:
                 mem_total = f"{info['memory_total']:.2f} GB"
                 mem_percent = f"{info['memory_percent']:.1f}%"
                 uptime = info['uptime']
-                roblox_count = len(info['roblox_packages'])
+                roblox_processes = info['roblox_packages']
+                roblox_count = len(roblox_processes)
                 roblox_status = f"Running: {roblox_count} instance{'s' if roblox_count != 1 else ''}"
-                roblox_details = "\n".join(info['roblox_packages']) if info['roblox_packages'] else "None"
+
+                # Calculate total Roblox CPU and RAM
+                total_roblox_cpu = 0
+                total_roblox_ram = 0
+
+                # Format roblox details with CPU and RAM for each process
+                if roblox_processes:
+                    roblox_details_list = []
+                    for proc in roblox_processes:
+                        if isinstance(proc, dict):
+                            # New format: dict with name, pid, cpu, memory_mb
+                            proc_name = proc.get('name', 'Unknown')
+                            proc_pid = proc.get('pid', 'N/A')
+                            proc_cpu = proc.get('cpu', 0)
+                            proc_mem = proc.get('memory_mb', 0)
+                            total_roblox_cpu += proc_cpu
+                            total_roblox_ram += proc_mem
+                            roblox_details_list.append(f"{proc_name} (PID: {proc_pid}) | CPU: {proc_cpu:.1f}% | RAM: {proc_mem:.1f}MB")
+                        else:
+                            # Legacy format: string (for backward compatibility)
+                            roblox_details_list.append(str(proc))
+                    roblox_details = "\n".join(roblox_details_list)
+                    # Add total Roblox CPU/RAM summary
+                    roblox_details += f"\n{'─' * 40}\n📊 Total Roblox: CPU {total_roblox_cpu:.1f}% | RAM {total_roblox_ram:.1f}MB"
+                else:
+                    roblox_details = "None"
 
                 tool_mem_usage = SystemMonitor.get_memory_usage()
                 tool_mem_display = f"{tool_mem_usage} MB" if tool_mem_usage is not None else "Unavailable"
@@ -1244,21 +1268,28 @@ class ExecutorManager:
                         console.print(f"[bold yellow][ ToiLaTu ] - No valid path found to write Lua script for {executor_name}[/bold yellow]")
 
     @staticmethod
-    def check_executor_status(package_name, continuous=True, max_wait_time=60): 
+    def check_executor_status(package_name, continuous=True, max_wait_time=60):
         retry_timeout = time.time() + max_wait_time
-        uid = globals()["_user_"][package_name]
-        notified = False  # chỉ log 1 lần khi offline
+        uid = globals().get("_user_", {}).get(package_name)
+
+        if not uid:
+            print(f"\033[1;31m[ERROR] UID not found for {package_name}! Run option 2 first.\033[0m")
+            return False
+
+        notified = False
 
         while True:
-            # 🔹 gọi check_executor_online thay vì chỉ check file
+            # Check API for executor status
             if check_executor_online(uid):
+                print(f"\033[1;32m[ ToiLaTu ] - {package_name} is online!\033[0m")
                 return True
 
             if continuous and time.time() > retry_timeout:
+                print(f"\033[1;31m[ ToiLaTu ] - {package_name} timeout after {max_wait_time}s\033[0m")
                 return False
 
             if not notified:
-                print(f"\033[1;31m[API] Executor {package_name} offline → waiting...\033[0m")
+                print(f"\033[1;33m[ ToiLaTu ] - Waiting for {package_name} to come online...\033[0m")
                 notified = True
 
             time.sleep(5)
@@ -1548,42 +1579,56 @@ class Runner:
     @staticmethod
     def monitor_presence(server_links, stop_event):
         in_game_status = {package_name: False for package_name, _ in server_links}
-            
+
         while not stop_event.is_set():
             try:
-                if globals()["check_exec_enable"] == "0":
-                    for package_name, server_link in server_links:
-                        ckhuy = FileManager.xuat(f"/data/data/{package_name}/app_webview/Default/Cookies")
-                        user_id = globals()["_user_"][package_name]
-                            
-                        presence_type = RobloxManager.check_user_online(user_id, ckhuy)
-                        
-                        if not in_game_status[package_name]:
-                            if presence_type == 2:
-                                with status_lock:
-                                    globals()["package_statuses"][package_name]["Status"] = "\033[1;32mIn-Game\033[0m"
-                                    UIManager.update_status_table()
-                                in_game_status[package_name] = True
-                                print(f"\033[1;32m[ ToiLaTu ] - {user_id} is now In-Game, monitoring started.\033[0m")
-                            continue 
-                            
-                        if presence_type != 2:
-                            with status_lock:
-                                globals()["package_statuses"][package_name]["Status"] = "\033[1;31mNot In-Game, Rejoining!\033[0m"
-                                UIManager.update_status_table()
-                            print(f"\033[1;31m[ ToiLaTu ] - {user_id} confirmed offline, rejoining...\033[0m")
-                            RobloxManager.kill_roblox_process(package_name)
-                            RobloxManager.delete_cache_for_package(package_name)
-                            time.sleep(2)
-                            threading.Thread(target=RobloxManager.launch_roblox, args=[package_name, server_link], daemon=True).start()
-                        else:
+                for package_name, server_link in server_links:
+                    uid = globals()["_user_"][package_name]
+
+                    # Check API for in-game status
+                    is_online = check_executor_online(uid)
+
+                    if not in_game_status[package_name]:
+                        # First time entering game
+                        if is_online:
                             with status_lock:
                                 globals()["package_statuses"][package_name]["Status"] = "\033[1;32mIn-Game\033[0m"
                                 UIManager.update_status_table()
-                time.sleep(60)
+                            in_game_status[package_name] = True
+                            print(f"\033[1;32m[ ToiLaTu ] - {package_name} (UID: {uid}) is now In-Game!\033[0m")
+                        else:
+                            # Still loading/waiting
+                            with status_lock:
+                                globals()["package_statuses"][package_name]["Status"] = "\033[1;33mWaiting for In-Game...\033[0m"
+                                UIManager.update_status_table()
+                    else:
+                        # Already in-game before, check if still online
+                        if not is_online:
+                            with status_lock:
+                                globals()["package_statuses"][package_name]["Status"] = "\033[1;31mOffline! Rejoining...\033[0m"
+                                UIManager.update_status_table()
+                            print(f"\033[1;31m[ ToiLaTu ] - {package_name} (UID: {uid}) is Offline! Rejoining...\033[0m")
+
+                            # Kill and rejoin
+                            RobloxManager.kill_roblox_process(package_name)
+                            RobloxManager.delete_cache_for_package(package_name)
+                            time.sleep(2)
+
+                            # Reset status
+                            in_game_status[package_name] = False
+
+                            # Relaunch
+                            threading.Thread(target=RobloxManager.launch_roblox, args=[package_name, server_link], daemon=True).start()
+                        else:
+                            # Still in-game
+                            with status_lock:
+                                globals()["package_statuses"][package_name]["Status"] = "\033[1;32mIn-Game\033[0m"
+                                UIManager.update_status_table()
+
+                time.sleep(30)  # Check every 30 seconds
             except Exception as e:
                 Utilities.log_error(f"Error in presence monitor: {e}")
-                time.sleep(60)
+                time.sleep(30)
 
     @staticmethod
     def force_rejoin(server_links, interval, stop_event):
@@ -1638,6 +1683,49 @@ def auto_change_android_id():
             set_android_id(auto_android_id_value)
         time.sleep(2)  
 
+globals()["roblox_process_list"] = []
+
+def update_roblox_processes_periodically(stop_event):
+    while not stop_event.is_set():
+        detected_processes = []  # List of dicts with process details
+        try:
+            prefix = globals().get("package_prefix", "com.roblox").lower()
+            for proc in psutil.process_iter(['name', 'pid', 'cmdline']):
+                try:
+                    process_obj = psutil.Process(proc.info['pid'])
+                    cpu_percent = process_obj.cpu_percent(interval=0.1)
+                    mem_info = process_obj.memory_info()
+                    mem_mb = round(mem_info.rss / (1024 * 1024), 2)  # RSS in MB
+
+                    # Check process name first (for standard Android apps)
+                    if proc.info['name'].lower().startswith(prefix):
+                        detected_processes.append({
+                            'name': proc.info['name'],
+                            'pid': proc.pid,
+                            'cpu': cpu_percent,
+                            'memory_mb': mem_mb
+                        })
+                        continue
+
+                    # Check cmdline for package name (for cloned apps like zam.gptkid*)
+                    cmdline = proc.info.get('cmdline', [])
+                    if cmdline and len(cmdline) > 0:
+                        package_name = cmdline[0]
+                        if package_name and prefix in package_name.lower():
+                            detected_processes.append({
+                                'name': package_name,
+                                'pid': proc.pid,
+                                'cpu': cpu_percent,
+                                'memory_mb': mem_mb
+                            })
+
+                except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+                    continue
+        except Exception as e:
+            Utilities.log_error(f"Error in process update thread: {e}")
+        globals()["roblox_process_list"] = detected_processes
+        time.sleep(30)
+
 def main():
     global stop_webhook_thread, webhook_interval, codex_bypass_enabled, codex_bypass_thread, codex_bypass_active
     global auto_android_id_enabled, auto_android_id_thread, auto_android_id_value
@@ -1647,6 +1735,11 @@ def main():
         return
     
     FileManager._load_config()
+    
+    # Start the new centralized process detection thread
+    process_updater_stop_event = threading.Event()
+    process_updater_thread = threading.Thread(target=update_roblox_processes_periodically, args=(process_updater_stop_event,), daemon=True)
+    process_updater_thread.start()
     
     if not globals().get("command_8_configured", False):
         globals()["check_exec_enable"] = "1"
@@ -1685,7 +1778,8 @@ def main():
             "Auto Check User Setup",
             "Toggle Codex Bypass - OLD",
             "Configure Package Prefix - NEW",
-            "Auto Change Android ID - NEW"
+            "Auto Change Android ID - NEW",
+            "Debug - List All Processes"
         ]
 
         UIManager.create_dynamic_menu(menu_options)
