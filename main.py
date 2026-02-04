@@ -1579,6 +1579,8 @@ class Runner:
     @staticmethod
     def monitor_presence(server_links, stop_event):
         in_game_status = {package_name: False for package_name, _ in server_links}
+        offline_since = {package_name: None for package_name, _ in server_links}  # Track when offline started
+        offline_wait_time = 120  # Wait 120 seconds before rejoining
 
         while not stop_event.is_set():
             try:
@@ -1595,6 +1597,7 @@ class Runner:
                                 globals()["package_statuses"][package_name]["Status"] = "\033[1;32mIn-Game\033[0m"
                                 UIManager.update_status_table()
                             in_game_status[package_name] = True
+                            offline_since[package_name] = None  # Reset offline timer
                             print(f"\033[1;32m[ ToiLaTu ] - {package_name} (UID: {uid}) is now In-Game!\033[0m")
                         else:
                             # Still loading/waiting
@@ -1604,26 +1607,55 @@ class Runner:
                     else:
                         # Already in-game before, check if still online
                         if not is_online:
-                            with status_lock:
-                                globals()["package_statuses"][package_name]["Status"] = "\033[1;31mOffline! Rejoining...\033[0m"
-                                UIManager.update_status_table()
-                            print(f"\033[1;31m[ ToiLaTu ] - {package_name} (UID: {uid}) is Offline! Rejoining...\033[0m")
+                            # Currently offline
+                            if offline_since[package_name] is None:
+                                # Just went offline, start timer
+                                offline_since[package_name] = time.time()
+                                with status_lock:
+                                    globals()["package_statuses"][package_name]["Status"] = "\033[1;31mOffline! Waiting to rejoin...\033[0m"
+                                    UIManager.update_status_table()
+                                print(f"\033[1;31m[ ToiLaTu ] - {package_name} (UID: {uid}) is Offline! Starting {offline_wait_time}s wait...\033[0m")
+                            else:
+                                # Check if waited long enough
+                                elapsed = time.time() - offline_since[package_name]
+                                remaining = offline_wait_time - elapsed
 
-                            # Kill and rejoin
-                            RobloxManager.kill_roblox_process(package_name)
-                            RobloxManager.delete_cache_for_package(package_name)
-                            time.sleep(2)
+                                if remaining <= 0:
+                                    # Wait time over, rejoin now
+                                    with status_lock:
+                                        globals()["package_statuses"][package_name]["Status"] = "\033[1;31mOffline! Rejoining...\033[0m"
+                                        UIManager.update_status_table()
+                                    print(f"\033[1;31m[ ToiLaTu ] - {package_name} (UID: {uid}) - Wait complete! Rejoining...\033[0m")
 
-                            # Reset status
-                            in_game_status[package_name] = False
+                                    # Kill and rejoin
+                                    RobloxManager.kill_roblox_process(package_name)
+                                    RobloxManager.delete_cache_for_package(package_name)
+                                    time.sleep(2)
 
-                            # Relaunch
-                            threading.Thread(target=RobloxManager.launch_roblox, args=[package_name, server_link], daemon=True).start()
+                                    # Wait 10 seconds before reopening
+                                    print(f"\033[1;33m[ ToiLaTu ] - {package_name} - Waiting 10s before reopening...\033[0m")
+                                    with status_lock:
+                                        globals()["package_statuses"][package_name]["Status"] = "\033[1;33mWaiting 10s to reopen...\033[0m"
+                                        UIManager.update_status_table()
+                                    time.sleep(10)
+
+                                    # Reset status
+                                    in_game_status[package_name] = False
+                                    offline_since[package_name] = None
+
+                                    # Relaunch
+                                    threading.Thread(target=RobloxManager.launch_roblox, args=[package_name, server_link], daemon=True).start()
+                                else:
+                                    # Still waiting
+                                    with status_lock:
+                                        globals()["package_statuses"][package_name]["Status"] = f"\033[1;33mOffline! Rejoin in {int(remaining)}s\033[0m"
+                                        UIManager.update_status_table()
                         else:
                             # Still in-game
                             with status_lock:
                                 globals()["package_statuses"][package_name]["Status"] = "\033[1;32mIn-Game\033[0m"
                                 UIManager.update_status_table()
+                            offline_since[package_name] = None  # Reset offline timer
 
                 time.sleep(30)  # Check every 30 seconds
             except Exception as e:
